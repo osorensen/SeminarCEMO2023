@@ -1,0 +1,136 @@
+---
+title: "Longitudinal Modeling of Age-Dependent Latent Traits with Generalized Additive Latent and Mixed Models"
+author: "Øystein Sørensen"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+
+class: center, middle
+
+# Cognitive Neuroscience
+
+.pull-left[
+![](figures/Stroop_comparison.png)
+
+![](figures/WASI.png)
+
+]
+
+--
+
+.pull-right[
+![](figures/MRI_of_Human_Brain.jpg)
+
+![](figures/desikan3.png)
+]
+
+---
+class: center, middle
+
+# Say You Have Data
+
+![](figures/sorensen_nimg_fig2.jpg)
+
+
+.footnote[
+Sørensen, Ø., Walhovd, K. B., & Fjell, A. M. (2021). A recipe for accurate estimation of lifespan brain trajectories, distinguishing longitudinal and cohort effects. NeuroImage, 226, 117596. https://doi.org/10.1016/j.neuroimage.2020.117596
+]
+
+
+---
+
+class: center
+
+
+<img src="figures/sorensen_pmet_fig1.png" width="500">
+
+.footnote[
+Sørensen, Ø., Fjell, A. M., & Walhovd, K. B. (2023). Longitudinal Modeling of Age-Dependent Latent Traits with Generalized Additive Latent and Mixed Models. Psychometrika. https://doi.org/10.1007/s11336-023-09910-z
+]
+
+---
+
+class: center
+
+# Natural Modeling Approach
+
+<img src="figures/kievit_fig4.jpg" width="400">
+
+.footnote[
+Kievit, R. A., Brandmaier, A. M., Ziegler, G., van Harmelen, A.-L., de Mooij, S. M. M., Moutoussis, M., Goodyer, I. M., Bullmore, E., Jones, P. B., Fonagy, P., Lindenberger, U., & Dolan, R. J. (2018). Developmental cognitive neuroscience using latent change score models: A tutorial and applications. Developmental Cognitive Neuroscience, 33, 99–117. https://doi.org/10.1016/j.dcn.2017.11.007
+]
+
+---
+
+# However...
+
+- Different brain regions follows idiosyncratic nonlinear trajectories:
+
+<img src="figures/sorensen_nimg_rois.jpg" width="500">
+
+---
+
+- Cognitive function kind of does too:
+
+<img src="figures/sorensen_pmet_fig1.png" width="500">
+
+---
+
+# However as well
+
+- Timepoints are irregular
+
+- Data come from different studies. Different versions of MR scanners and cognitive tests are often used.
+
+- Responses are of multiple types
+
+No easy way of modeling all of this. Cognitive test scores often reduced to a single principal component or sumscore.
+
+---
+
+# Is there a way out?
+
+- Generalized linear latent and mixed models (GLLAMM) gets us far.
+
+It allows:
+
+- Irregular timepoints
+
+- Mixed response types
+
+- Controling for all kinds of covariates
+
+It lacks:
+
+- Automatic estimation of nonlinear effects
+
+- Scalable algorithms for crossed random effects
+
+- R package
+
+
+.footnote[
+GLLAMM: Rabe-Hesketh, S., Skrondal, A., & Pickles, A. (2004). Generalized multilevel structural equation modeling. Psychometrika, 69(2), 167–190. https://doi.org/10.1007/BF02295939
+]
+
+---
+
+# Generalized Additive Latent and Mixed Models
+
+## Automatic estimation of nonlinear effects
+
+- Smoothing splines implemented as mixed models
+
+## Scalable algorithms for crossed random effects
+
+- Sparse matrix methods combined with the Laplace approximation
+
+## R package
+
+- R wrapper to C++ implementation
