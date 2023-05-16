@@ -1,6 +1,7 @@
 ---
 title: "Longitudinal Modeling of Age-Dependent Latent Traits with Generalized Additive Latent and Mixed Models"
 author: "Øystein Sørensen"
+institute: "Center for Lifespan Changes in Brain and Cognition<br>Department of Psychology, University of Oslo"
 output:
   xaringan::moon_reader:
     lib_dir: libs
@@ -8,51 +9,66 @@ output:
       highlightStyle: github
       highlightLines: true
       countIncrementalSlides: false
+
+---
+
+class: middle, center
+
+<table><tr><td>
+<img src="figures/paper_header.jpg" width="500">
+</td></tr></table>
+
+<img src="figures/qr_paper.png" width=150>
+
 ---
 
 
-class: center, middle
-
 # Cognitive Neuroscience
 
-.pull-left[
-![](figures/Stroop_comparison.png)
+- How does brain **function** relate to brain **structure** and **activity**?
 
-![](figures/WASI.png)
+.pull-left[
+<img src="figures/Stroop_comparison.png">
+
+<img src="figures/WASI.png">
 
 ]
 
 --
 
 .pull-right[
-![](figures/MRI_of_Human_Brain.jpg)
+<img src="figures/fmri.jpg">
 
-![](figures/desikan3.png)
+<img src="figures/desikan3.png">
 ]
 
----
-class: center, middle
+???
 
-# Say You Have Data
+Mention how this is particularly relevant in studies of development in children, but also in aging.
+
+---
+
+# Structural MRI Data
 
 ![](figures/sorensen_nimg_fig2.jpg)
 
 
-.footnote[
-Sørensen, Ø., Walhovd, K. B., & Fjell, A. M. (2021). A recipe for accurate estimation of lifespan brain trajectories, distinguishing longitudinal and cohort effects. NeuroImage, 226, 117596. https://doi.org/10.1016/j.neuroimage.2020.117596
-]
+
+
+
+???
+
+---
+
+# Structural MRI Data
+
+<img src="figures/sorensen_nimg_rois.jpg" width="600">
 
 
 ---
 
-class: center
-
 
 <img src="figures/sorensen_pmet_fig1.png" width="500">
-
-.footnote[
-Sørensen, Ø., Fjell, A. M., & Walhovd, K. B. (2023). Longitudinal Modeling of Age-Dependent Latent Traits with Generalized Additive Latent and Mixed Models. Psychometrika. https://doi.org/10.1007/s11336-023-09910-z
-]
 
 ---
 
