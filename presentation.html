@@ -19,7 +19,7 @@ class: center, middle, inverse, title-slide
 ### Øystein Sørensen
 ]
 .institute[
-### Center for Lifespan Changes in Brain and Cognition<br>Department of Psychology, University of Oslo
+### Center for Lifespan Changes in Brain and Cognition<br>Department of Psychology, University of Oslo<br><a href="https://osorensen.rbind.io/" class="uri">https://osorensen.rbind.io/</a>
 ]
 
 ---
@@ -80,46 +80,70 @@ Mention how this is particularly relevant in studies of development in children,
 
 ---
 
+# Cognitive Test Data
 
 &lt;img src="figures/sorensen_pmet_fig1.png" width="500"&gt;
+
+
+---
+
+# Research Questions
+
+- How is change in a cognitive domain correlated with brain change?
+
+- Can we find major factors of brain aging, or of cognitive aging?
+
+  - Similarly for development, which is kind of very early aging(!?)
 
 ---
 
 class: center
 
-# Natural Modeling Approach
+# Natural Approach - Some kind of SEM?
 
 &lt;img src="figures/kievit_fig4.jpg" width="400"&gt;
 
 .footnote[
-Kievit, R. A., Brandmaier, A. M., Ziegler, G., van Harmelen, A.-L., de Mooij, S. M. M., Moutoussis, M., Goodyer, I. M., Bullmore, E., Jones, P. B., Fonagy, P., Lindenberger, U., &amp; Dolan, R. J. (2018). Developmental cognitive neuroscience using latent change score models: A tutorial and applications. Developmental Cognitive Neuroscience, 33, 99–117. https://doi.org/10.1016/j.dcn.2017.11.007
+Kievit, R. A., et al. (2018). Developmental Cognitive Neuroscience, 33, 99–117. https://doi.org/10.1016/j.dcn.2017.11.007
 ]
 
 ---
 
 # However...
 
-- Different brain regions follows idiosyncratic nonlinear trajectories:
+- How to control for age with a parametric model?
 
 &lt;img src="figures/sorensen_nimg_rois.jpg" width="500"&gt;
 
 ---
 
-- Cognitive function kind of does too:
+# However...
 
-&lt;img src="figures/sorensen_pmet_fig1.png" width="500"&gt;
+- How to control for age with a parametric model?
+
+&lt;img src="figures/sorensen_pmet_fig1.png" width="480"&gt;
+
+???
+
+Mention the requirement that some parametric form must be imposed a priori.
 
 ---
 
-# However as well
+# Other Issues with Classical SEM
 
-- Timepoints are irregular
+- Irregular `\(\Delta t\)`
 
-- Data come from different studies. Different versions of MR scanners and cognitive tests are often used.
+- Multiple centers, scanners, test versions
 
-- Responses are of multiple types
+- Multiple response types
 
-No easy way of modeling all of this. Cognitive test scores often reduced to a single principal component or sumscore.
+- Retest effects
+
+
+--
+
+### Too complicated, mixed models often used
+
 
 ---
 
@@ -127,13 +151,13 @@ No easy way of modeling all of this. Cognitive test scores often reduced to a si
 
 - Generalized linear latent and mixed models (GLLAMM) gets us far.
 
-It allows:
+Allows:
 
 - Irregular timepoints
 
 - Mixed response types
 
-- Controling for all kinds of covariates
+- Covariates/predictors
 
 It lacks:
 
@@ -150,19 +174,110 @@ GLLAMM: Rabe-Hesketh, S., Skrondal, A., &amp; Pickles, A. (2004). Generalized mu
 
 ---
 
+# Proposed Framework
+
+Generalized additive latent and mixed models (GALAMMs).
+
+- Extends GLLAMMs by allowing allowing all responses to depend on smooth functions of any observed covariates.
+
+- Efficient computation with sparse matrix methods and Laplace approximation
+
+- C++ implementation implemented in R package `galamm`
+
+
+---
+
+class: inverse, middle, center
+
 # Generalized Additive Latent and Mixed Models
 
-## Automatic estimation of nonlinear effects
+---
 
-- Smoothing splines implemented as mixed models
+# Response
 
-## Scalable algorithms for crossed random effects
+- Exponential family
 
-- Sparse matrix methods combined with the Laplace approximation
+`$$f\left(y | \theta, \phi\right) = \exp \left( \frac{y\theta - b\left(\theta(\mu)\right)}{\phi} + c\left(y, \phi\right) \right)$$`
 
-## R package
+`\(b(\cdot)\)` and `\(c(\cdot)\)` can vary between observations.
 
-- R wrapper to C++ implementation
+---
+
+# (Non)Linear Predictor
+
+`$$\nu = \sum_{s=1}^{S} f_{s}\left(\mathbf{x}\right) + \sum_{l=2}^{L}\sum_{m=1}^{M_{l}} \eta_{m}^{(l)} \mathbf{z}^{(l)}_{m}{}^{'}\boldsymbol{\lambda}_{m}^{(l)}$$`
+
+- Predictors `\(\mathbf{x}\)` and `\(\boldsymbol{z}^{(l)}_{m}\)`, `\(S\)` smooth functions, `\(L\)` levels, each with `\(M_{l}\)` latent variables.
+
+- Factor loadings `\(\boldsymbol{\lambda}_{m}^{(l)}\)`, latent variables `\(\eta_{m}^{(l)}\)`.
+
+
+---
+
+# Structural Model
+
+`$$\boldsymbol{\eta} = \mathbf{B}\boldsymbol{\eta} + \mathbf{h}\left(\mathbf{w}\right) + \boldsymbol{\zeta}$$`
+
+- Coefficients for regression between latent variables `\(\boldsymbol{\eta}\)`.
+
+- Vector of smooth function `\(\mathbf{h}(\mathbf{w})\)`.
+
+- Disturbances `\(\boldsymbol{\zeta} \sim N(0, \boldsymbol{\Psi})\)`, i.e., random effects.
+
+
+---
+
+# Smoothing
+
+Smooth functions `\(f_{s}\left(\mathbf{x}\right)\)` in nonlinear and in structural model `\(\mathbf{h}(\mathbf{w})\)` are linear combinations of given basis functions, e.g.,
+
+`$$f(x) = \sum_{k=1}^{K} \beta_{k} b_{k}(x)$$`
+
+with penalty `\(\int f''(x)^{2} \text{d}x\)`.
+
+- Well-known that the resulting penalized likelihood is equivalent to a mixed model.
+
+---
+
+# Main Result
+
+- By transforming all smooth functions to their mixed effect counterpart, a GALAMM with `\(L\)` levels becomes a GLLAMM with `\(L+1\)` levels.
+
+- A GLLAMM is a nonlinear mixed model, and can be estimated using maximum marginal likelihood:
+
+`$$L\left(\boldsymbol{\beta}, \boldsymbol{\Lambda}, \boldsymbol{\Gamma}, \boldsymbol{\lambda}, \mathbf{B}, \boldsymbol{\phi}\right) =  \left(2 \pi \phi_{1}\right)^{-r/2}  \int_{\mathbb{R}^{r}} \exp\left( g\left(\boldsymbol{\beta}, \boldsymbol{\Lambda}, \boldsymbol{\Gamma}, \boldsymbol{\lambda}, \mathbf{B}, \boldsymbol{\phi}, \mathbf{u}\right) \right) \text{d} \mathbf{u}$$`
+
+where
+
+`$$g\left(\boldsymbol{\beta}, \boldsymbol{\Lambda}, \boldsymbol{\Gamma}, \boldsymbol{\lambda}, \mathbf{B}, \boldsymbol{\phi}, \mathbf{u}\right) = \mathbf{y}^{T} \mathbf{W}\boldsymbol{\nu} - d\left(\boldsymbol{\nu}\right)^{T} \mathbf{W}\mathbf{1}_{n}  + c\left(\mathbf{y}, \boldsymbol{\phi}\right)^{T} \mathbf{1}_{n} - \left(2\phi_{1}\right)^{-1} \left\| \mathbf{u} \right\|^{2}$$`
+
+---
+
+# Laplace Approximation
+
+We want the parameters that maximize:
+
+`$$L\left(\boldsymbol{\beta}, \boldsymbol{\Lambda}, \boldsymbol{\Gamma}, \boldsymbol{\lambda}, \mathbf{B}, \boldsymbol{\phi}\right) =  \left(2 \pi \phi_{1}\right)^{-r/2}  \int_{\mathbb{R}^{r}} \exp\left( g\left(\boldsymbol{\beta}, \boldsymbol{\Lambda}, \boldsymbol{\Gamma}, \boldsymbol{\lambda}, \mathbf{B}, \boldsymbol{\phi}, \mathbf{u}\right) \right) \text{d} \mathbf{u}$$`
+
+- We start by finding:
+
+`$$\tilde{\mathbf{u}} = \underset{\mathbf{u}}{\text{argmax}} \left\{ g\left(\boldsymbol{\beta}, \boldsymbol{\Lambda}, \boldsymbol{\Gamma}, \boldsymbol{\lambda}, \mathbf{B}, \phi, \mathbf{u}\right) \right\}$$`
+
+- Using analytical expressions for gradient and Hessian we find `\(\tilde{\mathbf{u}}\)` using penalized iteratively reweighted least squares.
+
+- To allow crossed random effects, we use sparse matrix methods, which include precomputing a permutation matrix that minimizes the amount of fill-in during Gaussian elimination.
+
+---
+
+# Maximizing Marginal Likelihood
+
+- The Laplace approximation lets us approximate the loss function at a given set of parameters. In the outer loop, we search for the best parameters.
+
+- Automatic differentiation since analytical gradients are hard to find in the general case.
+
+- Natural parametrization, and box constraints.
+
+- Some low-level manipulation is necessary since sparse model matrices change each time the parameters change.
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
