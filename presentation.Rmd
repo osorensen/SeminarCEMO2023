@@ -98,7 +98,7 @@ Kievit, R. A., et al. (2018). Developmental Cognitive Neuroscience, 33, 99–117
 
 # However...
 
-- How to control for age with a parametric model?
+- How to capture these effects with a parametric model?
 
 <img src="figures/sorensen_nimg_rois.jpg" width="500">
 
@@ -106,7 +106,7 @@ Kievit, R. A., et al. (2018). Developmental Cognitive Neuroscience, 33, 99–117
 
 # However...
 
-- How to control for age with a parametric model?
+- How to capture these effects with a parametric model?
 
 <img src="figures/sorensen_pmet_fig1.png" width="480">
 
@@ -146,7 +146,7 @@ Allows:
 
 - Covariates/predictors
 
-It lacks:
+Lacks:
 
 - Automatic estimation of nonlinear effects
 
@@ -156,14 +156,14 @@ It lacks:
 
 
 .footnote[
-GLLAMM: Rabe-Hesketh, S., Skrondal, A., & Pickles, A. (2004). Generalized multilevel structural equation modeling. Psychometrika, 69(2), 167–190. https://doi.org/10.1007/BF02295939
+GLLAMM: Rabe-Hesketh, S., Skrondal, A., & Pickles, A. (2004).  Psychometrika, 69(2), 167–190. https://doi.org/10.1007/BF02295939
 ]
 
 ---
 
 # Proposed Framework
 
-Generalized additive latent and mixed models (GALAMMs).
+Generalized **additive** latent and mixed models (GALAMMs).
 
 - Extends GLLAMMs by allowing allowing all responses to depend on smooth functions of any observed covariates.
 
@@ -205,7 +205,7 @@ $$\nu = \sum_{s=1}^{S} f_{s}\left(\mathbf{x}\right) + \sum_{l=2}^{L}\sum_{m=1}^{
 
 $$\boldsymbol{\eta} = \mathbf{B}\boldsymbol{\eta} + \mathbf{h}\left(\mathbf{w}\right) + \boldsymbol{\zeta}$$
 
-- Coefficients for regression between latent variables $\boldsymbol{\eta}$.
+- $\mathbf{B}$ contains coefficients for regression between latent variables.
 
 - Vector of smooth function $\mathbf{h}(\mathbf{w})$.
 
@@ -224,6 +224,9 @@ with penalty $\int f''(x)^{2} \text{d}x$.
 
 - Well-known that the resulting penalized likelihood is equivalent to a mixed model.
 
+- Smoothing parameters correspond to precision, so high variance means more wiggly fits.
+
+
 ---
 
 # Main Result
@@ -238,30 +241,182 @@ where
 
 $$g\left(\boldsymbol{\beta}, \boldsymbol{\Lambda}, \boldsymbol{\Gamma}, \boldsymbol{\lambda}, \mathbf{B}, \boldsymbol{\phi}, \mathbf{u}\right) = \mathbf{y}^{T} \mathbf{W}\boldsymbol{\nu} - d\left(\boldsymbol{\nu}\right)^{T} \mathbf{W}\mathbf{1}_{n}  + c\left(\mathbf{y}, \boldsymbol{\phi}\right)^{T} \mathbf{1}_{n} - \left(2\phi_{1}\right)^{-1} \left\| \mathbf{u} \right\|^{2}$$
 
+- Uncorrelated random effects $\mathbf{u}$, related to natural parametrization through $\boldsymbol{\Lambda}\mathbf{u} = \boldsymbol{\zeta} \sim N(\mathbf{0}, \boldsymbol{\Psi})$, with $\boldsymbol{\Psi} = \phi \boldsymbol{\Lambda}\boldsymbol{\Lambda}^{T}$.
+
 ---
 
-# Laplace Approximation
+# Algorithm
 
-We want the parameters that maximize:
+We want to find
+
+$$\left\{\hat{\boldsymbol{\beta}}, \hat{\boldsymbol{\Lambda}}, \hat{\boldsymbol{\Gamma}}, \hat{\boldsymbol{\lambda}}, \hat{\mathbf{B}}, \hat{\boldsymbol{\phi}} \right\} = \text{argmin}\left\{ L\left(\boldsymbol{\beta}, \boldsymbol{\Lambda}, \boldsymbol{\Gamma}, \boldsymbol{\lambda}, \mathbf{B}, \boldsymbol{\phi}\right) \right\}$$
+
+
+where
+
 
 $$L\left(\boldsymbol{\beta}, \boldsymbol{\Lambda}, \boldsymbol{\Gamma}, \boldsymbol{\lambda}, \mathbf{B}, \boldsymbol{\phi}\right) =  \left(2 \pi \phi_{1}\right)^{-r/2}  \int_{\mathbb{R}^{r}} \exp\left( g\left(\boldsymbol{\beta}, \boldsymbol{\Lambda}, \boldsymbol{\Gamma}, \boldsymbol{\lambda}, \mathbf{B}, \boldsymbol{\phi}, \mathbf{u}\right) \right) \text{d} \mathbf{u}$$
 
-- We start by finding:
+--
 
-$$\tilde{\mathbf{u}} = \underset{\mathbf{u}}{\text{argmax}} \left\{ g\left(\boldsymbol{\beta}, \boldsymbol{\Lambda}, \boldsymbol{\Gamma}, \boldsymbol{\lambda}, \mathbf{B}, \phi, \mathbf{u}\right) \right\}$$
+### Laplace Approximation
 
-- Using analytical expressions for gradient and Hessian we find $\tilde{\mathbf{u}}$ using penalized iteratively reweighted least squares.
+Find
 
-- To allow crossed random effects, we use sparse matrix methods, which include precomputing a permutation matrix that minimizes the amount of fill-in during Gaussian elimination.
+$$\tilde{\mathbf{u}} = \tilde{\mathbf{u}}\left(\boldsymbol{\beta}, \boldsymbol{\Lambda}, \boldsymbol{\Gamma}, \boldsymbol{\lambda}, \mathbf{B}, \phi, \mathbf{u}\right) = \underset{\mathbf{u}}{\text{argmax}} \left\{ g\left(\boldsymbol{\beta}, \boldsymbol{\Lambda}, \boldsymbol{\Gamma}, \boldsymbol{\lambda}, \mathbf{B}, \phi, \mathbf{u}\right) \right\}$$
+
+together with gradient $\boldsymbol{\nabla} g$ and Hessian $\mathbf{H}_{g}$. Then approximate $g(\cdot)$ with second-order Taylor expansion around $\tilde{\mathbf{u}}$, so the integral gets an analytical solution.
+
 
 ---
 
-# Maximizing Marginal Likelihood
+# Algorithm
 
-- The Laplace approximation lets us approximate the loss function at a given set of parameters. In the outer loop, we search for the best parameters.
+### Outer loop
 
-- Automatic differentiation since analytical gradients are hard to find in the general case.
+Find
 
-- Natural parametrization, and box constraints.
+$$\left\{\hat{\boldsymbol{\beta}}, \hat{\boldsymbol{\Lambda}}, \hat{\boldsymbol{\Gamma}}, \hat{\boldsymbol{\lambda}}, \hat{\mathbf{B}}, \hat{\boldsymbol{\phi}} \right\}$$
 
-- Some low-level manipulation is necessary since sparse model matrices change each time the parameters change.
+that maximize Laplace approximate marginal likelihood.
+
+### Inner loop
+
+For each candidate set of outer loop parameters, find random effects
+
+$$\tilde{\mathbf{u}} =  \underset{\mathbf{u}}{\text{argmax}} \left\{ g\left(\boldsymbol{\beta}, \boldsymbol{\Lambda}, \boldsymbol{\Gamma}, \boldsymbol{\lambda}, \mathbf{B}, \phi, \mathbf{u}\right) \right\}$$
+
+---
+
+# Inner loop
+
+- Finding random effects $\tilde{\mathbf{u}}$ is a penalized iteratively reweighted least squares problem.
+
+- Sparse Cholesky factorization of Hessian, with permutation $\mathbf{P}$ only dependent on sparsity pattern,
+
+$$\mathbf{L} \mathbf{D} \mathbf{L}^{T} = -\mathbf{P}  \mathbf{H}_{g} \mathbf{P}^{T}$$
+
+--
+
+- Updates $\mathbf{u}^{(k+1)} = \mathbf{u}^{(k)} + \tau \boldsymbol{\delta}^{(k)}$, increments at iteration $k$ given by
+
+$$\mathbf{L}^{(k)} \mathbf{D}^{(k)} \mathbf{L}^{(k)T} \mathbf{P} \boldsymbol{\delta}^{(k)} = \mathbf{P} \left( \boldsymbol{\Lambda}^{T} \mathbf{Z}^{T} \mathbf{W}^{(k)} \left( \mathbf{y} - \boldsymbol{\mu}^{(k)}\right)- (1/\phi_{1}^{(k)}) \mathbf{u}^{(k)}\right)$$
+
+- Control of stepsize $\tau$ actually necessary in practice.
+
+---
+
+# Outer loop
+
+- Cholesky factors and design matrices are linearized in the inner loop, but need to be updated between each step of the outer loop. Mappings to sparse matrix representations thus required.
+
+- Laplace approximate marginal log-likelihood is
+
+$$\mathbf{y}^{T} \mathbf{W}\boldsymbol{\nu} - b\left(\boldsymbol{\nu}\right)^{T} \mathbf{W}\mathbf{1}_{n}  + c\left(\mathbf{y}, \boldsymbol{\phi}\right)^{T} \mathbf{1}_{n} - \left(2\phi_{1}\right)^{-1} \left\| \tilde{\mathbf{u} }\right\|^{2} - (1/2)\log \text{tr}\left(\mathbf{D}\right)$$
+
+- Hard do differentiate this with respect to $\{\boldsymbol{\beta}, \boldsymbol{\Lambda}, \boldsymbol{\Gamma}, \boldsymbol{\lambda}, \mathbf{B}, \boldsymbol{\phi}\}$. Automatic differentiation turned out to be useful.
+
+- Box constraints typically present as well. L-BFGS-B algorithm worked well.
+
+---
+
+class: inverse, middle, center
+
+# Open Questions
+
+
+---
+
+# Wald type CIs sometimes bad
+
+.pull-left[
+
+![](figures/fig4_pmet.jpg)
+
+]
+.pull-right[
+
+- Means that marginal log-likelihood is poorly approximated by quadratic function near maximum.
+
+- Higher-order Laplace approximations? How to implement for sparse matrix methods, necessary for crossed random effects?
+
+- Profile likelihood methods?
+
+]
+
+
+---
+
+# Nonsensical zero variance estimates
+
+.pull-left[
+
+![](figures/fig5_pmet.jpg)
+
+]
+.pull-right[
+
+- Hodges (2014) develops some theory for this. Possible to extend to more complicated models?
+
+<img src="figures/hodges_cover.jpg" width="200"> 
+
+]
+
+---
+
+# CI coverage for smooth terms not optimal
+
+![](figures/fig8_pmet.jpg)
+
+- Possible to take smoothing parameter uncertainty into account when computing CIs, as done by Wood et al. (2016)?
+
+.footnote[Wood, S. N., Pya, N., & Säfken, B. (2016). Journal of the American Statistical Association, 111(516), 1548–1563. https://doi.org/10.1080/01621459.2016.1180986]
+
+
+---
+
+# Old style and new style random effects
+
+Terminology introduced by Hodges (2014):
+
+### Old-style random effects
+
+- Effects that are sampled randomly each time we take a new dataset.
+
+  - Latent variables.
+  
+  - Random effects.
+  
+### New-style random effects
+
+- Mixed model machinery used to enforce smoothing. Effects not actually sampled.
+
+  - Penalized spline coefficients.
+  
+  
+---
+
+# R package
+
+- All numerics implemented in C++. Template metaprogramming to allow automatic differentiation.
+
+- Hard to create a simple and stable R interface to C++ code, because of all the different types of parameters.
+
+  - Mappings between parameters and low-level representation needs to be created on-the-fly.
+
+- What is best?
+
+  - Syntax inspired by `lme4`, closer to mixed models?
+  
+  - Synes closer to `lavaan`?
+
+- Development version available from https://lcbc-uio.github.io/galamm/.
+
+---
+
+class: inverse middle, center
+
+# Thank you!
+
+
+### Any questions?
