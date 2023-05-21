@@ -22,6 +22,11 @@ class: middle, center
 
 ---
 
+class: inverse, middle, center
+
+# Motivating Applications
+
+---
 
 # Cognitive Neuroscience
 
@@ -48,6 +53,8 @@ Mention how this is particularly relevant in studies of development in children,
 
 ---
 
+class: center
+
 # Structural MRI Data
 
 ![](figures/sorensen_nimg_fig2.jpg)
@@ -60,6 +67,8 @@ Mention how this is particularly relevant in studies of development in children,
 
 ---
 
+class: center
+
 # Structural MRI Data
 
 <img src="figures/sorensen_nimg_rois.jpg" width="600">
@@ -67,10 +76,35 @@ Mention how this is particularly relevant in studies of development in children,
 
 ---
 
+class: center
+
 # Cognitive Test Data
 
 <img src="figures/sorensen_pmet_fig1.png" width="500">
 
+
+---
+
+# Cognitive Test Data
+
+.pull-left[
+
+In this figure:
+
+- California Verbal Learning Test. (CVLT) measures episodic memory.
+
+- Digit span test measures working memory.
+
+- Stroop tests measures speed and executive function.
+
+
+]
+
+.pull-right[
+
+![](figures/sorensen_pmet_fig1.png)
+
+]
 
 ---
 
@@ -84,23 +118,42 @@ Mention how this is particularly relevant in studies of development in children,
 
 ---
 
-class: center
 
 # Natural Approach - Some kind of SEM?
 
+<center>
 <img src="figures/kievit_fig4.jpg" width="400">
+</center>
 
 .footnote[
 Kievit, R. A., et al. (2018). Developmental Cognitive Neuroscience, 33, 99–117. https://doi.org/10.1016/j.dcn.2017.11.007
 ]
 
+
+---
+
+
+# Natural Approach - Some kind of SEM?
+
+<center>
+<img src="figures/cox_fig5.jpg" width="650">
+</center>
+
+.footnote[
+Cox, S. R., et al. (2021). Molecular Psychiatry, 26(6), 2651–2662. https://doi.org/10.1038/s41380-020-00975-1
+]
+
+
+
 ---
 
 # However...
 
 - How to capture these effects with a parametric model?
 
+<center>
 <img src="figures/sorensen_nimg_rois.jpg" width="500">
+</center>
 
 ---
 
@@ -108,7 +161,9 @@ Kievit, R. A., et al. (2018). Developmental Cognitive Neuroscience, 33, 99–117
 
 - How to capture these effects with a parametric model?
 
+<center>
 <img src="figures/sorensen_pmet_fig1.png" width="480">
+</center>
 
 ???
 
@@ -134,11 +189,10 @@ Mention the requirement that some parametric form must be imposed a priori.
 
 ---
 
-# Is there a way out?
+# Is GLLAMM the Solution?
 
-- Generalized linear latent and mixed models (GLLAMM) gets us far.
 
-Allows:
+### Allows
 
 - Irregular timepoints
 
@@ -146,7 +200,7 @@ Allows:
 
 - Covariates/predictors
 
-Lacks:
+### Lacks
 
 - Automatic estimation of nonlinear effects
 
@@ -156,7 +210,7 @@ Lacks:
 
 
 .footnote[
-GLLAMM: Rabe-Hesketh, S., Skrondal, A., & Pickles, A. (2004).  Psychometrika, 69(2), 167–190. https://doi.org/10.1007/BF02295939
+Generalized linear latent and mixed models (GLLAMM): Rabe-Hesketh, S., Skrondal, A., & Pickles, A. (2004).  Psychometrika, 69(2), 167–190. https://doi.org/10.1007/BF02295939
 ]
 
 ---
@@ -169,7 +223,7 @@ Generalized **additive** latent and mixed models (GALAMMs).
 
 - Efficient computation with sparse matrix methods and Laplace approximation
 
-- C++ implementation implemented in R package `galamm`
+- R package `galamm` (in progress)
 
 
 ---
@@ -192,7 +246,7 @@ $b(\cdot)$ and $c(\cdot)$ can vary between observations.
 
 # (Non)Linear Predictor
 
-$$\nu = \sum_{s=1}^{S} f_{s}\left(\mathbf{x}\right) + \sum_{l=2}^{L}\sum_{m=1}^{M_{l}} \eta_{m}^{(l)} \mathbf{z}^{(l)}_{m}{}^{'}\boldsymbol{\lambda}_{m}^{(l)}$$
+$$\boldsymbol{\nu} = \sum_{s=1}^{S} f_{s}\left(\mathbf{x}\right) + \sum_{l=2}^{L}\sum_{m=1}^{M_{l}} \eta_{m}^{(l)} \mathbf{z}^{(l)}_{m}{}^{'}\boldsymbol{\lambda}_{m}^{(l)}$$
 
 - Predictors $\mathbf{x}$ and $\boldsymbol{z}^{(l)}_{m}$, $S$ smooth functions, $L$ levels, each with $M_{l}$ latent variables.
 
@@ -209,7 +263,7 @@ $$\boldsymbol{\eta} = \mathbf{B}\boldsymbol{\eta} + \mathbf{h}\left(\mathbf{w}\r
 
 - Vector of smooth function $\mathbf{h}(\mathbf{w})$.
 
-- Disturbances $\boldsymbol{\zeta} \sim N(0, \boldsymbol{\Psi})$, i.e., random effects.
+- Disturbances $\boldsymbol{\zeta} \sim N(\boldsymbol{0}, \boldsymbol{\Psi})$, i.e., random effects.
 
 
 ---
@@ -232,6 +286,8 @@ with penalty $\int f''(x)^{2} \text{d}x$.
 # Main Result
 
 - By transforming all smooth functions to their mixed effect counterpart, a GALAMM with $L$ levels becomes a GLLAMM with $L+1$ levels.
+
+--
 
 - A GLLAMM is a nonlinear mixed model, and can be estimated using maximum marginal likelihood:
 
@@ -296,19 +352,25 @@ $$\tilde{\mathbf{u}} =  \underset{\mathbf{u}}{\text{argmax}} \left\{ g\left(\bol
 
 $$\mathbf{L} \mathbf{D} \mathbf{L}^{T} = -\mathbf{P}  \mathbf{H}_{g} \mathbf{P}^{T}$$
 
+
+
 --
 
 - Updates $\mathbf{u}^{(k+1)} = \mathbf{u}^{(k)} + \tau \boldsymbol{\delta}^{(k)}$, increments at iteration $k$ given by
 
 $$\mathbf{L}^{(k)} \mathbf{D}^{(k)} \mathbf{L}^{(k)T} \mathbf{P} \boldsymbol{\delta}^{(k)} = \mathbf{P} \left( \boldsymbol{\Lambda}^{T} \mathbf{Z}^{T} \mathbf{W}^{(k)} \left( \mathbf{y} - \boldsymbol{\mu}^{(k)}\right)- (1/\phi_{1}^{(k)}) \mathbf{u}^{(k)}\right)$$
 
-- Control of stepsize $\tau$ actually necessary in practice.
+- In case it helps intuition, the equivalent system in linear regression is $\mathbf{X}^{T}\mathbf{X} \boldsymbol{\beta} = \mathbf{X}^{T} \mathbf{y}$.
+
+- Control of stepsize $\tau$ turned out to be necessary in practice.
 
 ---
 
 # Outer loop
 
-- Cholesky factors and design matrices are linearized in the inner loop, but need to be updated between each step of the outer loop. Mappings to sparse matrix representations thus required.
+- Cholesky factors and design matrices are fixed in the inner loop, but need update between each step of the outer loop. Mappings to sparse matrix representations thus required.
+
+--
 
 - Laplace approximate marginal log-likelihood is
 
@@ -368,6 +430,8 @@ class: inverse, middle, center
 
 ![](figures/fig8_pmet.jpg)
 
+- Smooth terms are linear combinations of fixed and random effects. Random effects may inaccurate standard errors.
+
 - Possible to take smoothing parameter uncertainty into account when computing CIs, as done by Wood et al. (2016)?
 
 .footnote[Wood, S. N., Pya, N., & Säfken, B. (2016). Journal of the American Statistical Association, 111(516), 1548–1563. https://doi.org/10.1080/01621459.2016.1180986]
@@ -375,23 +439,13 @@ class: inverse, middle, center
 
 ---
 
-# Old style and new style random effects
+# Measurement Invariance
 
-Terminology introduced by Hodges (2014):
+- Factor loadings for given tests are likely to change both over time and with covariates like age. 
 
-### Old-style random effects
+- Conceptually possible in the framework, but likely to yield computational challenges.
 
-- Effects that are sampled randomly each time we take a new dataset.
 
-  - Latent variables.
-  
-  - Random effects.
-  
-### New-style random effects
-
-- Mixed model machinery used to enforce smoothing. Effects not actually sampled.
-
-  - Penalized spline coefficients.
   
   
 ---
