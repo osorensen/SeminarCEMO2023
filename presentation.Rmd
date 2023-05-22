@@ -59,7 +59,7 @@ class: center
 
 ![](figures/sorensen_nimg_fig2.jpg)
 
-
+Data from LCBC: https://www.oslobrains.no/
 
 
 
@@ -115,6 +115,10 @@ In this figure:
 - Can we find major factors of brain aging, or of cognitive aging?
 
   - Similarly for development, which is kind of very early aging(!?)
+
+- Can we measure effects of, e.g., memory training?
+
+- How do genes and environment impact all of this?
 
 ---
 
@@ -181,18 +185,21 @@ Mention the requirement that some parametric form must be imposed a priori.
 
 - Retest effects
 
-
 --
 
-### Too complicated, mixed models often used
+Models exists out there to handle all of this, but terribly hard to use in practice.
 
+- Sum scores and mixed models are hence often used.
 
 ---
 
-# Is GLLAMM the Solution?
+# Generalized Linear Latent and Mixed Models?
 
+Is it the tool cognitive neuroscience needs to discover?
 
-### Allows
+--
+
+It allows:
 
 - Irregular timepoints
 
@@ -200,7 +207,7 @@ Mention the requirement that some parametric form must be imposed a priori.
 
 - Covariates/predictors
 
-### Lacks
+But it lacks:
 
 - Automatic estimation of nonlinear effects
 
@@ -210,7 +217,7 @@ Mention the requirement that some parametric form must be imposed a priori.
 
 
 .footnote[
-Generalized linear latent and mixed models (GLLAMM): Rabe-Hesketh, S., Skrondal, A., & Pickles, A. (2004).  Psychometrika, 69(2), 167–190. https://doi.org/10.1007/BF02295939
+Rabe-Hesketh, S., Skrondal, A., & Pickles, A. (2004).  Psychometrika, 69(2), 167–190. https://doi.org/10.1007/BF02295939
 ]
 
 ---
@@ -219,7 +226,7 @@ Generalized linear latent and mixed models (GLLAMM): Rabe-Hesketh, S., Skrondal,
 
 Generalized **additive** latent and mixed models (GALAMMs).
 
-- Extends GLLAMMs by allowing allowing all responses to depend on smooth functions of any observed covariates.
+- Extends GLLAMMs by allowing allowing all responses to depend on **smooth functions** of any observed covariates.
 
 - Efficient computation with sparse matrix methods and Laplace approximation
 
@@ -246,12 +253,21 @@ $b(\cdot)$ and $c(\cdot)$ can vary between observations.
 
 # (Non)Linear Predictor
 
+
+
 $$\boldsymbol{\nu} = \sum_{s=1}^{S} f_{s}\left(\mathbf{x}\right) + \sum_{l=2}^{L}\sum_{m=1}^{M_{l}} \eta_{m}^{(l)} \mathbf{z}^{(l)}_{m}{}^{'}\boldsymbol{\lambda}_{m}^{(l)}$$
 
 - Predictors $\mathbf{x}$ and $\boldsymbol{z}^{(l)}_{m}$, $S$ smooth functions, $L$ levels, each with $M_{l}$ latent variables.
 
 - Factor loadings $\boldsymbol{\lambda}_{m}^{(l)}$, latent variables $\eta_{m}^{(l)}$.
 
+--
+
+### Note
+
+- Corresponds to the measurement model in a SEM.
+
+- Can have $f_{s}(\mathbf{x}) = \mathbf{x}^{T}\boldsymbol{\beta}$, but this is more generic.
 
 ---
 
@@ -261,7 +277,7 @@ $$\boldsymbol{\eta} = \mathbf{B}\boldsymbol{\eta} + \mathbf{h}\left(\mathbf{w}\r
 
 - $\mathbf{B}$ contains coefficients for regression between latent variables.
 
-- Vector of smooth function $\mathbf{h}(\mathbf{w})$.
+- Vector of smooth functions $\mathbf{h}(\mathbf{w})$.
 
 - Disturbances $\boldsymbol{\zeta} \sim N(\boldsymbol{0}, \boldsymbol{\Psi})$, i.e., random effects.
 
@@ -276,7 +292,11 @@ $$f(x) = \sum_{k=1}^{K} \beta_{k} b_{k}(x)$$
 
 with penalty $\int f''(x)^{2} \text{d}x$.
 
-- Well-known that the resulting penalized likelihood is equivalent to a mixed model.
+--
+
+- Resulting penalized likelihood equivalent to that of a mixed model.
+
+- Random effect design matrix composed of parts of $\{b_{1}(x), \dots, b_{K}(x)\}$ in penalty range space, and fixed effect design matrix composed of parts in penalty nullspace. In other words, penalized coefficients become random effects.
 
 - Smoothing parameters correspond to precision, so high variance means more wiggly fits.
 
@@ -420,7 +440,9 @@ class: inverse, middle, center
 
 - Hodges (2014) develops some theory for this. Possible to extend to more complicated models?
 
+<center>
 <img src="figures/hodges_cover.jpg" width="200"> 
+</center>
 
 ]
 
@@ -435,6 +457,25 @@ class: inverse, middle, center
 - Possible to take smoothing parameter uncertainty into account when computing CIs, as done by Wood et al. (2016)?
 
 .footnote[Wood, S. N., Pya, N., & Säfken, B. (2016). Journal of the American Statistical Association, 111(516), 1548–1563. https://doi.org/10.1080/01621459.2016.1180986]
+
+
+---
+
+# More Accurate Integral Approximations?
+
+The computational bottleneck is this integral, where $r$ can easily reach 50,000:
+
+$$\left(2 \pi \phi_{1}\right)^{-r/2}  \int_{\mathbb{R}^{r}} \exp\left( g\left(\boldsymbol{\beta}, \boldsymbol{\Lambda}, \boldsymbol{\Gamma}, \boldsymbol{\lambda}, \mathbf{B}, \boldsymbol{\phi}, \mathbf{u}\right) \right) \text{d} \mathbf{u}$$
+
+- Standard Laplace approximation has known issues, but also advantages.
+
+- Is it possible to formulate higher-order Laplace approximations in terms of sparse matrix operations, and thus allows efficient computation also with very complex nesting structures, e.g., crossed random effects? (Andersson & Xin, 2021, Raudenbush et al., 2000).
+
+--
+
+- The same question goes for Gauss-Hermite quadrature. Ogden (2015) has shown how one can find *one* factorization (out of many) of the empirical Bayes posterior with cross random effects, and use this when computing integrals.
+
+- Or should we all just resort to Stan?
 
 
 ---
