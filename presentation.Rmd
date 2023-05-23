@@ -1,7 +1,7 @@
 ---
 title: "Generalized Semiparametric Latent Variable Modeling"
 author: "Øystein Sørensen"
-institute: "Center for Lifespan Changes in Brain and Cognition<br>Department of Psychology, University of Oslo<br>https://osorensen.rbind.io/"
+institute: "Center for Lifespan Changes in Brain and Cognition (LCBC)<br>Department of Psychology<br>University of Oslo<br><br>https://osorensen.rbind.io/"
 output:
   xaringan::moon_reader:
     lib_dir: libs
