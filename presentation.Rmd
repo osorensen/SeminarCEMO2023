@@ -478,11 +478,15 @@ $$\left(2 \pi \phi_{1}\right)^{-r/2}  \int_{\mathbb{R}^{r}} \exp\left( g\left(\b
 
 # CI coverage for smooth terms not optimal
 
-![](figures/fig8_pmet.jpg)
+<center>
+<img src="figures/fig_ci_pmet.jpg" height="180">
+<img src="figures/fig8_pmet.jpg" height="180">
+</center>
 
-- Smooth terms are linear combinations of fixed and random effects. Random effects may inaccurate standard errors.
 
-- Possible to take smoothing parameter uncertainty into account when computing CIs (Wood, Pya, and Säfken, JASA, 2016)?
+- Smooth is linear combinations of fixed and random effects.
+
+- Possible to take smoothing parameter uncertainty into account when computing CIs for random effects (Wood, Pya, and Säfken, JASA, 2016)?
 
 
 
