@@ -1,5 +1,5 @@
 ---
-title: "Longitudinal Modeling of Age-Dependent Latent Traits with Generalized Additive Latent and Mixed Models"
+title: "Generalized Semiparametric Latent Variable Modeling"
 author: "Øystein Sørensen"
 institute: "Center for Lifespan Changes in Brain and Cognition<br>Department of Psychology, University of Oslo<br>https://osorensen.rbind.io/"
 output:
@@ -177,13 +177,13 @@ Mention the requirement that some parametric form must be imposed a priori.
 
 # Other Issues with Classical SEM
 
-- Irregular $\Delta t$
+- To get large datasets we must accept irregular $\Delta t$
 
-- Multiple centers, scanners, test versions
+- Complex grouping structure: Multiple centers, scanners, test versions
 
 - Multiple response types
 
-- Retest effects
+- Need to add covariates, e.g., retest effects
 
 --
 
@@ -195,7 +195,7 @@ Models exists out there to handle all of this, but terribly hard to use in pract
 
 # Generalized Linear Latent and Mixed Models?
 
-Is it the tool cognitive neuroscience needs to discover?
+GLLAMM by Rabe-Hesketh, Skrondal et al.: The tool cognitive neuroscience needs to discover?
 
 --
 
@@ -267,7 +267,7 @@ $$\boldsymbol{\nu} = \sum_{s=1}^{S} f_{s}\left(\mathbf{x}\right) + \sum_{l=2}^{L
 
 - Corresponds to the measurement model in a SEM.
 
-- Can have $f_{s}(\mathbf{x}) = \mathbf{x}^{T}\boldsymbol{\beta}$, but this is more generic.
+- Special cases: $f_{s}(\mathbf{x}) = \mathbf{x}^{T}\boldsymbol{\beta}$ and $f_{s}(\mathbf{x}) = \boldsymbol{\beta}_{0}$.
 
 ---
 
@@ -350,7 +350,7 @@ together with gradient $\boldsymbol{\nabla} g$ and Hessian $\mathbf{H}_{g}$. The
 
 ### Outer loop
 
-Find
+Search over the feasible set to find
 
 $$\left\{\hat{\boldsymbol{\beta}}, \hat{\boldsymbol{\Lambda}}, \hat{\boldsymbol{\Gamma}}, \hat{\boldsymbol{\lambda}}, \hat{\mathbf{B}}, \hat{\boldsymbol{\phi}} \right\}$$
 
@@ -361,6 +361,8 @@ that maximize Laplace approximate marginal likelihood.
 For each candidate set of outer loop parameters, find random effects
 
 $$\tilde{\mathbf{u}} =  \underset{\mathbf{u}}{\text{argmax}} \left\{ g\left(\boldsymbol{\beta}, \boldsymbol{\Lambda}, \boldsymbol{\Gamma}, \boldsymbol{\lambda}, \mathbf{B}, \phi, \mathbf{u}\right) \right\}$$
+
+and use these to compute the value of the Laplace approximate marginal likelihood.
 
 ---
 
@@ -388,7 +390,7 @@ $$\mathbf{L}^{(k)} \mathbf{D}^{(k)} \mathbf{L}^{(k)T} \mathbf{P} \boldsymbol{\de
 
 # Outer loop
 
-- Cholesky factors and design matrices are fixed in the inner loop, but need update between each step of the outer loop. Mappings to sparse matrix representations thus required.
+- "Design matrices" depend on parameters, so must be updated.
 
 --
 
@@ -398,13 +400,37 @@ $$\mathbf{y}^{T} \mathbf{W}\boldsymbol{\nu} - b\left(\boldsymbol{\nu}\right)^{T}
 
 - Hard do differentiate this with respect to $\{\boldsymbol{\beta}, \boldsymbol{\Lambda}, \boldsymbol{\Gamma}, \boldsymbol{\lambda}, \mathbf{B}, \boldsymbol{\phi}\}$. Automatic differentiation turned out to be useful.
 
+
+--
+
 - Box constraints typically present as well. L-BFGS-B algorithm worked well.
+
 
 ---
 
 class: inverse, middle, center
 
 # Open Questions
+
+
+
+---
+
+# More Accurate Integral Approximations?
+
+The computational bottleneck is this integral, where $r$ can easily reach 50,000:
+
+$$\left(2 \pi \phi_{1}\right)^{-r/2}  \int_{\mathbb{R}^{r}} \exp\left( g\left(\boldsymbol{\beta}, \boldsymbol{\Lambda}, \boldsymbol{\Gamma}, \boldsymbol{\lambda}, \mathbf{B}, \boldsymbol{\phi}, \mathbf{u}\right) \right) \text{d} \mathbf{u}$$
+
+- Standard Laplace approximation has known issues, but also advantages.
+
+- Is it possible to formulate higher-order Laplace approximations in terms of sparse matrix operations, and thus allows efficient computation also with very complex nesting structures, e.g., crossed random effects? (Andersson & Xin, 2021, Raudenbush et al., 2000).
+
+--
+
+- The same question goes for Gauss-Hermite quadrature. Ogden (2015) has shown how one can find *one* factorization (out of many) of the empirical Bayes posterior with cross random effects, and use this when computing integrals.
+
+- Or should we just resort to Stan? https://mc-stan.org/
 
 
 ---
@@ -420,9 +446,7 @@ class: inverse, middle, center
 
 - Means that marginal log-likelihood is poorly approximated by quadratic function near maximum.
 
-- Higher-order Laplace approximations? How to implement for sparse matrix methods, necessary for crossed random effects?
-
-- Profile likelihood methods?
+- Profile likelihood methods maybe better, but can they be made computationally feasible?
 
 ]
 
@@ -432,6 +456,10 @@ class: inverse, middle, center
 # Nonsensical zero variance estimates
 
 .pull-left[
+
+- $\psi_{m}^{(2)}$ is between-timepoint within-participant variance
+
+- $\psi_{m}^{(3)}$ is between-participant variation
 
 ![](figures/fig5_pmet.jpg)
 
@@ -454,28 +482,8 @@ class: inverse, middle, center
 
 - Smooth terms are linear combinations of fixed and random effects. Random effects may inaccurate standard errors.
 
-- Possible to take smoothing parameter uncertainty into account when computing CIs, as done by Wood et al. (2016)?
+- Possible to take smoothing parameter uncertainty into account when computing CIs (Wood, Pya, and Säfken, JASA, 2016)?
 
-.footnote[Wood, S. N., Pya, N., & Säfken, B. (2016). Journal of the American Statistical Association, 111(516), 1548–1563. https://doi.org/10.1080/01621459.2016.1180986]
-
-
----
-
-# More Accurate Integral Approximations?
-
-The computational bottleneck is this integral, where $r$ can easily reach 50,000:
-
-$$\left(2 \pi \phi_{1}\right)^{-r/2}  \int_{\mathbb{R}^{r}} \exp\left( g\left(\boldsymbol{\beta}, \boldsymbol{\Lambda}, \boldsymbol{\Gamma}, \boldsymbol{\lambda}, \mathbf{B}, \boldsymbol{\phi}, \mathbf{u}\right) \right) \text{d} \mathbf{u}$$
-
-- Standard Laplace approximation has known issues, but also advantages.
-
-- Is it possible to formulate higher-order Laplace approximations in terms of sparse matrix operations, and thus allows efficient computation also with very complex nesting structures, e.g., crossed random effects? (Andersson & Xin, 2021, Raudenbush et al., 2000).
-
---
-
-- The same question goes for Gauss-Hermite quadrature. Ogden (2015) has shown how one can find *one* factorization (out of many) of the empirical Bayes posterior with cross random effects, and use this when computing integrals.
-
-- Or should we all just resort to Stan?
 
 
 ---
